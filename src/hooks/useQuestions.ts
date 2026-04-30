@@ -8,7 +8,9 @@ function read(): Question[] {
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) return JSON.parse(raw) as Question[];
-  } catch {}
+  } catch {
+    // Fall back to seed data when storage is unavailable or corrupted.
+  }
   return seed;
 }
 

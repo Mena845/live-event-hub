@@ -1,4 +1,7 @@
-import { Link, useParams } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Calendar, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -60,7 +63,7 @@ export default function EventPage() {
           </div>
           <div className="mt-6">
             <Button asChild className="bg-gradient-primary text-primary-foreground border-0">
-              <Link to={`/events/${ev.id}/planning`}>Ouvrir le planning</Link>
+              <Link href={`/events/${ev.id}/planning`}>Ouvrir le planning</Link>
             </Button>
           </div>
         </div>

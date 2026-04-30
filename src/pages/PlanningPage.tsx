@@ -1,4 +1,6 @@
-import { useParams } from "react-router-dom";
+"use client";
+
+import { useParams } from "next/navigation";
 import { rooms, sessions, events, isLive } from "@/lib/mockData";
 import { SessionCard } from "@/components/SessionCard";
 import { useNow } from "@/hooks/useNow";

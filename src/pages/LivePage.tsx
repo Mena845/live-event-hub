@@ -1,3 +1,5 @@
+"use client";
+
 import { sessions, isLive } from "@/lib/mockData";
 import { SessionCard } from "@/components/SessionCard";
 import { LiveBadge } from "@/components/LiveBadge";

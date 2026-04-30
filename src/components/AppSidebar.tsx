@@ -1,5 +1,8 @@
+"use client";
+
 import { Calendar, Home, LayoutGrid, Mic2, Radio, DoorOpen, Star } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
@@ -25,7 +28,7 @@ const items = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const { pathname } = useLocation();
+  const pathname = usePathname();
   const isActive = (url: string) =>
     url === "/" ? pathname === "/" : pathname.startsWith(url);
 
@@ -33,14 +36,14 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <div className="px-3 pt-4 pb-2">
-          <NavLink to="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-primary shadow-glow flex items-center justify-center">
               <Radio className="h-4 w-4 text-primary-foreground" />
             </div>
             {!collapsed && (
               <span className="font-display font-bold text-lg tracking-tight">EventFlow</span>
             )}
-          </NavLink>
+          </Link>
         </div>
 
         <SidebarGroup>
@@ -50,10 +53,10 @@ export function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <NavLink to={item.url} end={item.url === "/"}>
+                    <Link href={item.url}>
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

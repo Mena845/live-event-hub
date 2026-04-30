@@ -1,4 +1,7 @@
-import { Link } from "react-router-dom";
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
 import { Clock, MapPin, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +41,7 @@ export function SessionCard({ session, compact = false }: { session: Session; co
               </Badge>
             )}
           </div>
-          <Link to={`/sessions/${session.id}`} className="block">
+          <Link href={`/sessions/${session.id}`} className="block">
             <h3 className="font-display font-semibold text-base leading-snug group-hover:text-primary-glow transition-smooth">
               {session.title}
             </h3>
@@ -62,11 +65,13 @@ export function SessionCard({ session, compact = false }: { session: Session; co
                 const sp = getSpeaker(sid);
                 if (!sp) return null;
                 return (
-                  <img
+                  <Image
                     key={sid}
                     src={sp.photoUrl}
                     alt={sp.fullName}
                     title={sp.fullName}
+                    width={28}
+                    height={28}
                     className="h-7 w-7 rounded-full ring-2 ring-card object-cover"
                   />
                 );

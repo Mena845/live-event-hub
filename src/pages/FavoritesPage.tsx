@@ -1,4 +1,6 @@
-import { Link } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
 import { Star } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { sessions } from "@/lib/mockData";
@@ -21,7 +23,7 @@ export default function FavoritesPage() {
         <div className="rounded-2xl border border-border/60 bg-card/50 p-10 text-center">
           <p className="text-muted-foreground mb-4">Aucune session favorite pour l'instant.</p>
           <Button asChild className="bg-gradient-primary text-primary-foreground border-0">
-            <Link to="/events/ev1/planning">Parcourir le planning</Link>
+            <Link href="/events/ev1/planning">Parcourir le planning</Link>
           </Button>
         </div>
       ) : (

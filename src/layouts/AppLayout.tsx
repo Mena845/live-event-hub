@@ -1,11 +1,12 @@
-import { Outlet } from "react-router-dom";
+"use client";
+
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useNow } from "@/hooks/useNow";
 import { sessions, isLive } from "@/lib/mockData";
 import { LiveBadge } from "@/components/LiveBadge";
 
-export default function AppLayout() {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   const now = useNow(15_000);
   const liveCount = sessions.filter((s) => isLive(s, now)).length;
 
@@ -31,7 +32,7 @@ export default function AppLayout() {
             )}
           </header>
           <main className="flex-1 min-w-0">
-            <Outlet />
+            {children}
           </main>
         </div>
       </div>

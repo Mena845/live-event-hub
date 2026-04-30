@@ -1,4 +1,6 @@
-import { Link } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
 import { ArrowRight, Calendar, MapPin, Radio, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -37,12 +39,12 @@ export default function Index() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" className="bg-gradient-primary text-primary-foreground border-0 shadow-glow hover:opacity-90">
-              <Link to="/events/ev1/planning">
+              <Link href="/events/ev1/planning">
                 Voir le planning <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="bg-background/30 backdrop-blur">
-              <Link to="/live">
+              <Link href="/live">
                 <Radio className="mr-2 h-4 w-4" />
                 Sessions en direct {liveSessions.length > 0 && `(${liveSessions.length})`}
               </Link>
@@ -57,13 +59,13 @@ export default function Index() {
             <h2 className="font-display text-2xl font-semibold flex items-center gap-3">
               <LiveBadge size="md" /> En direct maintenant
             </h2>
-            <Link to="/live" className="text-sm text-primary-glow hover:underline">
+            <Link href="/live" className="text-sm text-primary-glow hover:underline">
               Tout voir
             </Link>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {liveSessions.map((s) => (
-              <Link key={s.id} to={`/sessions/${s.id}`}>
+              <Link key={s.id} href={`/sessions/${s.id}`}>
                 <Card className="p-5 border-live/40 bg-card/80 hover:border-live transition-smooth shadow-glow h-full">
                   <LiveBadge />
                   <h3 className="font-display font-semibold text-lg mt-3 leading-snug">
@@ -85,7 +87,7 @@ export default function Index() {
         </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {events.map((ev) => (
-            <Link key={ev.id} to={`/events/${ev.id}`} className="group">
+            <Link key={ev.id} href={`/events/${ev.id}`} className="group">
               <Card className="overflow-hidden border-border/60 bg-card/70 backdrop-blur transition-smooth hover:-translate-y-1 hover:shadow-elegant h-full flex flex-col">
                 <div className={`h-32 bg-gradient-to-br ${ev.coverColor} relative`}>
                   <div className="absolute inset-0 bg-background/20" />
