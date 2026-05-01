@@ -22,22 +22,24 @@ export default function Index() {
   const liveSessions = sessions.filter((s) => isLive(s, now));
 
   return (
-    <div className="px-4 sm:px-20 py-10 max-w-7xl ml-55 w-full">
-      <section className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/40 backdrop-blur-md p-8 sm:p-14 shadow-elegant">
+    // ✅ Suppression du ml-55 hardcodé — mx-auto gère le centrage
+    <div className="px-4 sm:px-8 py-8 sm:py-10 max-w-7xl mx-auto w-full">
+      {/* Hero */}
+      <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/60 bg-card/40 backdrop-blur-md p-6 sm:p-10 lg:p-14 shadow-elegant">
         <div className="absolute inset-0 bg-gradient-primary opacity-10 pointer-events-none" />
         <div className="relative max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-3 py-1 text-xs text-muted-foreground mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-3 py-1 text-xs text-muted-foreground mb-5">
             <Sparkles className="h-3.5 w-3.5 text-primary-glow" />
             Plateforme événementielle temps réel
           </div>
-          <h1 className="font-display text-4xl sm:text-6xl font-bold leading-[1.05] tracking-tight">
+          <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight">
             Vivez vos événements <span className="text-gradient">en direct.</span>
           </h1>
-          <p className="mt-5 text-lg text-muted-foreground max-w-2xl">
+          <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl">
             Planning multi-track, sessions live et Q&A temps réel. Tout ce qu'il faut pour
             naviguer un événement et engager les participants — sans friction.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-6 sm:mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" className="bg-gradient-primary text-primary-foreground border-0 shadow-glow hover:opacity-90">
               <Link to="/events/ev1/planning">
                 Voir le planning <ArrowRight className="ml-2 h-4 w-4" />
@@ -53,17 +55,18 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Sessions live */}
       {liveSessions.length > 0 && (
-        <section className="mt-14">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display text-2xl font-semibold flex items-center gap-3">
+        <section className="mt-10 sm:mt-14">
+          <div className="flex items-center justify-between mb-5 sm:mb-6">
+            <h2 className="font-display text-xl sm:text-2xl font-semibold flex items-center gap-3">
               <LiveBadge size="md" /> En direct maintenant
             </h2>
-            <Link to="/live" className="text-sm text-primary-glow hover:underline">
+            <Link to="/live" className="text-sm text-primary-glow hover:underline shrink-0">
               Tout voir
             </Link>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {liveSessions.map((s) => (
               <Link key={s.id} to={`/sessions/${s.id}`}>
                 <Card className="p-5 border-live/40 bg-card/80 hover:border-live transition-smooth shadow-glow h-full">
@@ -81,28 +84,29 @@ export default function Index() {
         </section>
       )}
 
-      <section className="mt-16">
-        <div className="flex items-end justify-between mb-6">
-          <h2 className="font-display text-2xl font-semibold">Événements à l'affiche</h2>
+      {/* Événements */}
+      <section className="mt-12 sm:mt-16">
+        <div className="flex items-end justify-between mb-5 sm:mb-6">
+          <h2 className="font-display text-xl sm:text-2xl font-semibold">Événements à l'affiche</h2>
         </div>
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((ev) => (
             <Link key={ev.id} to={`/events/${ev.id}`} className="group">
               <Card className="overflow-hidden border-border/60 bg-card/70 backdrop-blur transition-smooth hover:-translate-y-1 hover:shadow-elegant h-full flex flex-col">
-                <div className={`h-32 bg-gradient-to-br ${ev.coverColor} relative`}>
+                <div className={`h-28 sm:h-32 bg-gradient-to-br ${ev.coverColor} relative`}>
                   <div className="absolute inset-0 bg-background/20" />
                 </div>
-                <div className="p-5 flex-1 flex flex-col">
+                <div className="p-4 sm:p-5 flex-1 flex flex-col">
                   <Badge variant="secondary" className="self-start mb-2 text-[10px] uppercase tracking-wider">
                     {fmtDate(ev.startDate)}
                   </Badge>
-                  <h3 className="font-display font-semibold text-lg group-hover:text-primary-glow transition-smooth">
+                  <h3 className="font-display font-semibold text-base sm:text-lg group-hover:text-primary-glow transition-smooth">
                     {ev.title}
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1 line-clamp-2 flex-1">
                     {ev.description}
                   </p>
-                  <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
+                  <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
                       <Calendar className="h-3.5 w-3.5" />
                       {fmtDate(ev.startDate)}
