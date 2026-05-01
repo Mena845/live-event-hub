@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { rooms, sessions, isLive } from "@/lib/mockData";
 import { Card } from "@/components/ui/card";
 import { LiveBadge } from "@/components/LiveBadge";
@@ -26,7 +26,7 @@ export default function RoomsPage() {
                 {list.map((s) => {
                   const live = isLive(s, now);
                   return (
-                    <Link key={s.id} href={`/sessions/${s.id}`}>
+                    <Link key={s.id} to={`/sessions/${s.id}`}>
                       <Card className={`p-4 flex items-center justify-between gap-4 bg-card/60 border-border/60 transition-smooth hover:border-primary/50 ${live ? "border-live/50" : ""}`}>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 mb-1">

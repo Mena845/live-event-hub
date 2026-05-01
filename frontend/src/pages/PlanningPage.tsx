@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams } from "react-router-dom";
 import { rooms, sessions, events, isLive } from "@/lib/mockData";
 import { SessionCard } from "@/components/SessionCard";
 import { useNow } from "@/hooks/useNow";
@@ -15,7 +15,7 @@ export default function PlanningPage() {
   const evSessions = sessions.filter((s) => s.eventId === ev.id);
 
   return (
-    <div className="px-4 sm:px-8 py-8 max-w-[1400px] mx-auto w-full">
+    <div className="px-4 sm:px-8 py-8 max-w-[1400px] ml-45 w-full">
       <div className="mb-6">
         <h1 className="font-display text-3xl font-bold tracking-tight">Planning multi-track</h1>
         <p className="text-muted-foreground mt-1">{ev.title}</p>

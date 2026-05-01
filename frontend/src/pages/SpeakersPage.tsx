@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { speakers } from "@/lib/mockData";
 import { Card } from "@/components/ui/card";
 
@@ -12,10 +11,10 @@ export default function SpeakersPage() {
       <p className="text-muted-foreground mt-1 mb-8">Découvrez les speakers et leurs sessions.</p>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {speakers.map((sp) => (
-          <Link key={sp.id} href={`/speakers/${sp.id}`}>
+          <Link key={sp.id} to={`/speakers/${sp.id}`}>
             <Card className="p-5 bg-card/70 border-border/60 transition-smooth hover:-translate-y-0.5 hover:shadow-elegant h-full">
               <div className="flex items-center gap-4">
-                <Image src={sp.photoUrl} alt={sp.fullName} width={64} height={64} className="h-16 w-16 rounded-full object-cover ring-2 ring-border" />
+                <img src={sp.photoUrl} alt={sp.fullName} className="h-16 w-16 rounded-full object-cover ring-2 ring-border" />
                 <div className="min-w-0">
                   <p className="font-display font-semibold text-lg">{sp.fullName}</p>
                 </div>

@@ -1,8 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Linkedin, Twitter } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { sessions, speakers } from "@/lib/mockData";
@@ -24,13 +22,13 @@ export default function SpeakerDetailPage() {
 
   return (
     <div className="px-4 sm:px-8 py-8 max-w-5xl mx-auto w-full">
-      <Link href="/speakers" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link to="/speakers" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Tous les intervenants
       </Link>
 
       <Card className="mt-4 p-6 sm:p-8 bg-card/70 backdrop-blur border-border/60 shadow-elegant">
         <div className="flex flex-col sm:flex-row gap-6 items-start">
-          <Image src={sp.photoUrl} alt={sp.fullName} width={112} height={112} className="h-28 w-28 rounded-2xl object-cover ring-2 ring-border" />
+          <img src={sp.photoUrl} alt={sp.fullName} className="h-28 w-28 rounded-2xl object-cover ring-2 ring-border" />
           <div className="min-w-0 flex-1">
             <h1 className="font-display text-3xl font-bold tracking-tight">{sp.fullName}</h1>
             <p className="mt-3 text-muted-foreground">{sp.bio}</p>

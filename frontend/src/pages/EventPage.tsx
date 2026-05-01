@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import { Link, useParams } from "react-router-dom";
 import { Calendar, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,7 +35,7 @@ export default function EventPage() {
   });
 
   return (
-    <div className="px-4 sm:px-8 py-8 max-w-7xl mx-auto w-full">
+    <div className="px-4 sm:px-8 py-8 max-w-7xl ml-50 w-full">
       <div className="rounded-3xl overflow-hidden border border-border/60 shadow-elegant">
         <div className={`h-44 bg-gradient-to-br ${ev.coverColor} relative`}>
           <div className="absolute inset-0 bg-background/30" />
@@ -63,7 +62,7 @@ export default function EventPage() {
           </div>
           <div className="mt-6">
             <Button asChild className="bg-gradient-primary text-primary-foreground border-0">
-              <Link href={`/events/${ev.id}/planning`}>Ouvrir le planning</Link>
+              <Link to={`/events/${ev.id}/planning`}>Ouvrir le planning</Link>
             </Button>
           </div>
         </div>
