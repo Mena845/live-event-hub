@@ -19,7 +19,7 @@ export default function LivePage() {
 
       {live.length === 0 ? (
         <div className="rounded-2xl border border-border/60 bg-card/50 p-10 text-center text-muted-foreground">
-          Aucune session en direct pour l'instant.
+          Aucune session en direct pour l&apos;instant.
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">

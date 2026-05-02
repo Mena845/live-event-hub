@@ -12,9 +12,10 @@ function read(): string[] {
 }
 
 export function useFavorites() {
-  const [favorites, setFavorites] = useState<string[]>(() => read());
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   useEffect(() => {
+    setFavorites(read());
     const onStorage = (e: StorageEvent) => {
       if (e.key === KEY) setFavorites(read());
     };

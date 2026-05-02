@@ -1,6 +1,7 @@
 "use client";
 
-import { Link, useParams } from "react-router-dom";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Calendar, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,9 @@ function fmtDateRange(start: string, end: string) {
 }
 
 export default function EventPage() {
-  const { eventId = "ev1" } = useParams();
+  const params = useParams();
+  const rawEventId = params?.eventId;
+  const eventId = typeof rawEventId === "string" ? rawEventId : Array.isArray(rawEventId) ? rawEventId[0] : "ev1";
   const ev = events.find((e) => e.id === eventId);
   const now = useNow();
   const [filter, setFilter] = useState<"all" | "live" | "upcoming">("all");
@@ -63,7 +66,7 @@ export default function EventPage() {
           </div>
           <div className="mt-5 sm:mt-6">
             <Button asChild className="bg-gradient-primary text-primary-foreground border-0 w-full sm:w-auto">
-              <Link to={`/events/${ev.id}/planning`}>Ouvrir le planning</Link>
+              <Link href={`/events/${ev.id}/planning`}>Ouvrir le planning</Link>
             </Button>
           </div>
         </div>
