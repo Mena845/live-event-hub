@@ -18,9 +18,10 @@ let listeners: Array<() => void> = [];
 const notify = () => listeners.forEach((l) => l());
 
 export function useQuestions(sessionId?: string) {
-  const [all, setAll] = useState<Question[]>(() => read());
+  const [all, setAll] = useState<Question[]>([]);
 
   useEffect(() => {
+    setAll(read());
     const sync = () => setAll(read());
     listeners.push(sync);
     return () => {

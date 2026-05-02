@@ -1,6 +1,8 @@
 "use client";
 
-import { Link, useParams } from "react-router-dom";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 import { ArrowLeft, ArrowUp, Clock, MapPin, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,7 +29,9 @@ function fmt(d: string) {
 }
 
 export default function SessionDetailPage() {
-  const { sessionId = "" } = useParams();
+  const params = useParams();
+  const rawSessionId = params?.sessionId;
+  const sessionId = typeof rawSessionId === "string" ? rawSessionId : Array.isArray(rawSessionId) ? rawSessionId[0] : "";
   const session = getSession(sessionId);
   const now = useNow(15_000);
   const { isFavorite, toggle } = useFavorites();
@@ -55,7 +59,7 @@ export default function SessionDetailPage() {
 
   return (
     <div className="px-4 sm:px-8 py-8 max-w-5xl mx-auto w-full">
-      <Link to={`/events/${session.eventId}/planning`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link href={`/events/${session.eventId}/planning`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Retour au planning
       </Link>
 
@@ -95,9 +99,15 @@ export default function SessionDetailPage() {
             const sp = getSpeaker(sid);
             if (!sp) return null;
             return (
-              <Link to={`/speakers/${sp.id}`} key={sid}>
+              <Link href={`/speakers/${sp.id}`} key={sid}>
                 <Card className="p-4 flex items-center gap-4 bg-card/60 border-border/60 hover:border-primary/50 transition-smooth">
-                  <img src={sp.photoUrl} alt={sp.fullName} className="h-14 w-14 rounded-full object-cover ring-2 ring-border" />
+                  <Image
+                    src={sp.photoUrl}
+                    alt={sp.fullName}
+                    width={56}
+                    height={56}
+                    className="h-14 w-14 rounded-full object-cover ring-2 ring-border"
+                  />
                   <div className="min-w-0">
                     <p className="font-display font-semibold">{sp.fullName}</p>
                     <p className="text-xs text-muted-foreground line-clamp-2">{sp.bio}</p>

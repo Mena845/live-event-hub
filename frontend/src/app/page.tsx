@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Calendar, MapPin, Radio, Sparkles } from "lucide-react";
+import { ArrowRight, Calendar, Home, Radio } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { LiveBadge } from "@/components/LiveBadge";
 import { events, sessions, isLive } from "@/lib/mockData";
 import { useNow } from "@/hooks/useNow";
@@ -17,19 +17,17 @@ function fmtDate(d: string) {
   });
 }
 
-export default function Index() {
+export default function HomePage() {
   const now = useNow();
   const liveSessions = sessions.filter((s) => isLive(s, now));
 
   return (
-    // ✅ Suppression du ml-55 hardcodé — mx-auto gère le centrage
     <div className="px-4 sm:px-8 py-8 sm:py-10 max-w-7xl mx-auto w-full">
-      {/* Hero */}
       <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/60 bg-card/40 backdrop-blur-md p-6 sm:p-10 lg:p-14 shadow-elegant">
         <div className="absolute inset-0 bg-gradient-primary opacity-10 pointer-events-none" />
         <div className="relative max-w-3xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-3 py-1 text-xs text-muted-foreground mb-5">
-            <Sparkles className="h-3.5 w-3.5 text-primary-glow" />
+            <Radio className="h-3.5 w-3.5 text-primary-glow" />
             Plateforme événementielle temps réel
           </div>
           <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight">
@@ -55,7 +53,6 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Sessions live */}
       {liveSessions.length > 0 && (
         <section className="mt-10 sm:mt-14">
           <div className="flex items-center justify-between mb-5 sm:mb-6">
@@ -68,7 +65,7 @@ export default function Index() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {liveSessions.map((s) => (
-              <Link key={s.id} href={`/sessions/${s.id}`}>
+              <Link key={s.id} href={`/sessions/${s.id}`} className="group">
                 <Card className="p-5 border-live/40 bg-card/80 hover:border-live transition-smooth shadow-glow h-full">
                   <LiveBadge />
                   <h3 className="font-display font-semibold text-lg mt-3 leading-snug">
@@ -84,7 +81,6 @@ export default function Index() {
         </section>
       )}
 
-      {/* Événements */}
       <section className="mt-12 sm:mt-16">
         <div className="flex items-end justify-between mb-5 sm:mb-6">
           <h2 className="font-display text-xl sm:text-2xl font-semibold">Événements à l&apos;affiche</h2>
@@ -112,7 +108,7 @@ export default function Index() {
                       {fmtDate(ev.startDate)}
                     </span>
                     <span className="inline-flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5" />
+                      <Home className="h-3.5 w-3.5" />
                       {ev.location}
                     </span>
                   </div>

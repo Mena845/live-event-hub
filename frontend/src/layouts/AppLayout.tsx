@@ -1,12 +1,13 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useNow } from "@/hooks/useNow";
 import { sessions, isLive } from "@/lib/mockData";
 import { LiveBadge } from "@/components/LiveBadge";
-import { Link, useLocation } from "react-router-dom";
-import { Calendar, Home, LayoutGrid, Mic2, Radio, DoorOpen, Star } from "lucide-react";
+import { Home, LayoutGrid, Mic2, Radio, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const mobileNavItems = [
@@ -20,7 +21,7 @@ const mobileNavItems = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const now = useNow(15_000);
   const liveCount = sessions.filter((s) => isLive(s, now)).length;
-  const { pathname } = useLocation();
+  const pathname = usePathname() ?? "/";
 
   const isActive = (url: string) =>
     url === "/" ? pathname === "/" : pathname.startsWith(url);
@@ -44,7 +45,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger />
               </span>
               {/* Logo + nom sur mobile */}
-              <Link to="/" className="flex items-center gap-2 md:hidden">
+              <Link href="/" className="flex items-center gap-2 md:hidden">
                 <div className="h-7 w-7 rounded-lg bg-gradient-primary shadow-glow flex items-center justify-center">
                   <Radio className="h-3.5 w-3.5 text-primary-foreground" />
                 </div>
@@ -80,9 +81,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             return (
               <Link
                 key={item.url}
-                to={item.url}
+                href={item.url}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 flex-1 py-2 text-[10px] font-medium transition-smooth rounded-xl mx-0.5",
+                  "relative flex flex-col items-center justify-center gap-1 flex-1 py-2 text-[10px] font-medium transition-smooth rounded-xl mx-0.5",
                   active
                     ? "text-primary-glow"
                     : "text-muted-foreground hover:text-foreground"
@@ -96,7 +97,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 />
                 <span>{item.title}</span>
                 {item.url === "/live" && liveCount > 0 && (
-                  <span className="absolute top-2.5 ml-5 h-2 w-2 rounded-full bg-live animate-pulse" />
+                  <span className="absolute right-4 top-2 h-2 w-2 rounded-full bg-live animate-pulse" />
                 )}
               </Link>
             );

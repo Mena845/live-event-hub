@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "react-router-dom";
+import { useParams } from "next/navigation";
 import { rooms, sessions, events, isLive } from "@/lib/mockData";
 import { SessionCard } from "@/components/SessionCard";
 import { useNow } from "@/hooks/useNow";
@@ -8,7 +8,9 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export default function PlanningPage() {
-  const { eventId = "ev1" } = useParams();
+  const params = useParams();
+  const rawEventId = params?.eventId;
+  const eventId = typeof rawEventId === "string" ? rawEventId : Array.isArray(rawEventId) ? rawEventId[0] : "ev1";
   const ev = events.find((e) => e.id === eventId);
   const now = useNow();
   // Vue mobile : une salle à la fois
