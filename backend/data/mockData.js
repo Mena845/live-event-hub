@@ -110,7 +110,68 @@ export const isLive = (s) => {
   return ref.getTime() >= start && ref.getTime() <= end;
 };
 
-export const getSpeaker = (id) => speakers.find((s) => s.id === id);
+const resolveSpeaker = (id) => speakers.find((s) => s.id === id) ?? null;
+const resolveRoom = (id) => rooms.find((r) => r.id === id) ?? null;
+
+const buildSession = (session) => {
+  const room = session.roomId ? resolveRoom(session.roomId) : null;
+  const speakersList = session.speakerIds?.map((speakerId, index) => {
+    const speaker = resolveSpeaker(speakerId);
+    return speaker ? { sortOrder: index, speaker: {
+      id: speaker.id,
+      fullName: speaker.fullName,
+      photoUrl: speaker.photoUrl,
+      bio: speaker.bio,
+      twitter: speaker.links?.twitter ?? null,
+      linkedin: speaker.links?.linkedin ?? null,
+      website: speaker.links?.website ?? null,
+    } } : null;
+  }).filter(Boolean);
+
+  return {
+    ...session,
+    room,
+    speakers: speakersList,
+  };
+};
+
+export const getSpeaker = (id) => {
+  const speaker = speakers.find((s) => s.id === id);
+  if (!speaker) return undefined;
+
+  const sessionsForSpeaker = sessions
+    .filter((session) => session.speakerIds?.includes(id))
+    .map((session, index) => ({
+      sortOrder: index,
+      session: buildSession(session),
+    }));
+
+  return {
+    id: speaker.id,
+    fullName: speaker.fullName,
+    photoUrl: speaker.photoUrl,
+    bio: speaker.bio,
+    twitter: speaker.links?.twitter ?? null,
+    linkedin: speaker.links?.linkedin ?? null,
+    website: speaker.links?.website ?? null,
+    sessions: sessionsForSpeaker,
+  };
+};
+
 export const getRoom = (id) => rooms.find((r) => r.id === id);
-export const getEvent = (id) => events.find((e) => e.id === id);
-export const getSession = (id) => sessions.find((s) => s.id === id);
+
+export const getEvent = (id) => {
+  const event = events.find((e) => e.id === id);
+  if (!event) return undefined;
+
+  return {
+    ...event,
+    sessions: sessions.filter((session) => session.eventId === id).map(buildSession),
+  };
+};
+
+export const getSession = (id) => {
+  const session = sessions.find((s) => s.id === id);
+  if (!session) return undefined;
+  return buildSession(session);
+};

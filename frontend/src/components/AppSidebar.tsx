@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, Home, LayoutGrid, Mic2, Radio, DoorOpen, Star } from "lucide-react";
+import { Calendar, Home, LayoutGrid, Lock, Mic2, Radio, DoorOpen, Star } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +23,7 @@ const items = [
   { title: "Salles", url: "/rooms", icon: DoorOpen },
   { title: "Speakers", url: "/speakers", icon: Mic2 },
   { title: "Favoris", url: "/favorites", icon: Star },
+  { title: "Admin", url: "/admin", icon: Lock },
 ];
 
 export function AppSidebar() {

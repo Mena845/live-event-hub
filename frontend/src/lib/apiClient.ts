@@ -9,8 +9,11 @@ export const API_BASE =
 
 async function req<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options?.headers as Record<string, string> | undefined),
+    },
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -71,6 +74,42 @@ export const api = {
       req<void>("/favorites", {
         method: "DELETE",
         body: JSON.stringify({ userToken, sessionId }),
+      }),
+  },
+  admin: {
+    login: (username: string, password: string) =>
+      req<{ token: string }>("/admin/login", {
+        method: "POST",
+        body: JSON.stringify({ username, password }),
+      }),
+    createSession: (token: string, payload: {
+      eventId: string;
+      roomId?: string | null;
+      title: string;
+      description?: string | null;
+      track?: string | null;
+      startTime: string;
+      endTime: string;
+      capacity?: number | null;
+      speakerIds?: string[];
+    }) =>
+      req<ApiSession>("/sessions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      }),
+    createSpeaker: (token: string, payload: {
+      fullName: string;
+      photoUrl?: string | null;
+      bio?: string | null;
+      twitter?: string | null;
+      linkedin?: string | null;
+      website?: string | null;
+    }) =>
+      req<ApiSpeaker>("/speakers", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
       }),
   },
 };
