@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { useNow } from "@/hooks/useNow";
-import { sessions, isLive } from "@/lib/mockData";
+import { api } from "@/lib/apiClient";
 import { LiveBadge } from "@/components/LiveBadge";
 import { Home, LayoutGrid, Mic2, Radio, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,9 +19,24 @@ const mobileNavItems = [
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const now = useNow(15_000);
-  const liveCount = sessions.filter((s) => isLive(s, now)).length;
+  const [liveCount, setLiveCount] = useState(0);
   const pathname = usePathname() ?? "/";
+
+  useEffect(() => {
+    let active = true;
+
+    api.sessions.live().then((sessions) => {
+      if (!active) return;
+      setLiveCount(sessions.length);
+    }).catch(() => {
+      if (!active) return;
+      setLiveCount(0);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const isActive = (url: string) =>
     url === "/" ? pathname === "/" : pathname.startsWith(url);

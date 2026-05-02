@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { ArrowRight, Calendar, Home, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LiveBadge } from "@/components/LiveBadge";
-import { events, sessions, isLive } from "@/lib/mockData";
-import { useNow } from "@/hooks/useNow";
+import { api, type ApiEvent, type ApiSession } from "@/lib/apiClient";
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString("fr-FR", {
@@ -18,8 +18,31 @@ function fmtDate(d: string) {
 }
 
 export default function HomePage() {
-  const now = useNow();
-  const liveSessions = sessions.filter((s) => isLive(s, now));
+  const [events, setEvents] = useState<ApiEvent[]>([]);
+  const [liveSessions, setLiveSessions] = useState<ApiSession[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchData = async () => {
+      try {
+        const [eventsData, liveData] = await Promise.all([api.events.list(), api.sessions.live()]);
+        if (!active) return;
+        setEvents(eventsData);
+        setLiveSessions(liveData);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    fetchData();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className="px-4 sm:px-8 py-8 sm:py-10 max-w-7xl mx-auto w-full">
@@ -53,7 +76,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {liveSessions.length > 0 && (
+      {loading ? (
+        <div className="mt-10 text-sm text-muted-foreground">Chargement des événements…</div>
+      ) : (
+        liveSessions.length > 0 && (
         <section className="mt-10 sm:mt-14">
           <div className="flex items-center justify-between mb-5 sm:mb-6">
             <h2 className="font-display text-xl sm:text-2xl font-semibold flex items-center gap-3">

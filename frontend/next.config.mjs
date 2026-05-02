@@ -4,6 +4,8 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "i.pravatar.cc" },
+      { protocol: "https", hostname: "combo.staticflickr.com" },
+      { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
   // En dev, proxifie /api/* vers le backend Express (port 4000)
