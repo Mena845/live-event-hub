@@ -1,13 +1,20 @@
 "use client";
 
-import { sessions, isLive } from "@/lib/mockData";
+import { useEffect, useState } from "react";
+import { api, type ApiSession } from "@/lib/apiClient";
 import { SessionCard } from "@/components/SessionCard";
 import { LiveBadge } from "@/components/LiveBadge";
-import { useNow } from "@/hooks/useNow";
 
 export default function LivePage() {
-  const now = useNow(10_000);
-  const live = sessions.filter((s) => isLive(s, now));
+  const [live, setLive] = useState<ApiSession[]>([]);
+
+  const refresh = () => api.sessions.live().then(setLive).catch(() => {});
+
+  useEffect(() => {
+    refresh();
+    const id = setInterval(refresh, 10_000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div className="px-4 sm:px-8 py-8 max-w-6xl mx-auto w-full">

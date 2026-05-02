@@ -1,42 +1,59 @@
+/**
+ * useFavorites — favoris stockés en base via le backend.
+ * userToken anonyme persisté dans localStorage pour identifier l'utilisateur.
+ */
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
-
-const KEY = "eventflow:favorites";
-
-function read(): string[] {
-  try {
-    const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as string[]) : [];
-  } catch {
-    return [];
-  }
-}
+import { api } from "@/lib/apiClient";
+import { getUserToken } from "@/lib/userToken";
 
 export function useFavorites() {
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    try {
+      const token = getUserToken();
+      const data = await api.favorites.list(token);
+      setFavorites(data.map((f) => f.sessionId));
+    } catch {
+      // réseau indisponible
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    setFavorites(read());
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === KEY) setFavorites(read());
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
+    refresh();
+  }, [refresh]);
 
-  const persist = (next: string[]) => {
-    setFavorites(next);
-    localStorage.setItem(KEY, JSON.stringify(next));
-  };
+  const toggle = useCallback(
+    async (sessionId: string) => {
+      const token = getUserToken();
+      const isFav = favorites.includes(sessionId);
+      setFavorites((prev) =>
+        isFav ? prev.filter((id) => id !== sessionId) : [...prev, sessionId]
+      );
+      try {
+        if (isFav) {
+          await api.favorites.remove(token, sessionId);
+        } else {
+          await api.favorites.add(token, sessionId);
+        }
+      } catch {
+        setFavorites((prev) =>
+          isFav ? [...prev, sessionId] : prev.filter((id) => id !== sessionId)
+        );
+      }
+    },
+    [favorites]
+  );
 
-  const toggle = useCallback((id: string) => {
-    const next = read();
-    const idx = next.indexOf(id);
-    if (idx >= 0) next.splice(idx, 1);
-    else next.push(id);
-    persist(next);
-  }, []);
+  const isFavorite = useCallback(
+    (id: string) => favorites.includes(id),
+    [favorites]
+  );
 
-  const isFavorite = useCallback((id: string) => favorites.includes(id), [favorites]);
-
-  return { favorites, toggle, isFavorite };
+  return { favorites, toggle, isFavorite, loading };
 }

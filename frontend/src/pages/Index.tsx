@@ -6,8 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LiveBadge } from "@/components/LiveBadge";
-import { events, sessions, isLive } from "@/lib/mockData";
+import { useEffect, useState } from "react";
+import { api, type ApiEvent, type ApiSession } from "@/lib/apiClient";
 import { useNow } from "@/hooks/useNow";
+
+function isLive(s: ApiSession, ref: Date) {
+  return new Date(s.startTime) <= ref && new Date(s.endTime) >= ref;
+}
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString("fr-FR", {
@@ -19,10 +24,23 @@ function fmtDate(d: string) {
 
 export default function Index() {
   const now = useNow();
-  const liveSessions = sessions.filter((s) => isLive(s, now));
+  const [events, setEvents] = useState<ApiEvent[]>([]);
+  const [liveSessions, setLiveSessions] = useState<ApiSession[]>([]);
+
+  useEffect(() => {
+    api.events.list().then(setEvents).catch(console.error);
+    api.sessions.live().then(setLiveSessions).catch(console.error);
+  }, []);
+
+  // Refresh live sessions every 30s
+  useEffect(() => {
+    const id = setInterval(() => {
+      api.sessions.live().then(setLiveSessions).catch(() => {});
+    }, 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
-    // ✅ Suppression du ml-55 hardcodé — mx-auto gère le centrage
     <div className="px-4 sm:px-8 py-8 sm:py-10 max-w-7xl mx-auto w-full">
       {/* Hero */}
       <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/60 bg-card/40 backdrop-blur-md p-6 sm:p-10 lg:p-14 shadow-elegant">
@@ -71,12 +89,8 @@ export default function Index() {
               <Link key={s.id} href={`/sessions/${s.id}`}>
                 <Card className="p-5 border-live/40 bg-card/80 hover:border-live transition-smooth shadow-glow h-full">
                   <LiveBadge />
-                  <h3 className="font-display font-semibold text-lg mt-3 leading-snug">
-                    {s.title}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                    {s.description}
-                  </p>
+                  <h3 className="font-display font-semibold text-lg mt-3 leading-snug">{s.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{s.description}</p>
                 </Card>
               </Link>
             ))}
@@ -93,7 +107,7 @@ export default function Index() {
           {events.map((ev) => (
             <Link key={ev.id} href={`/events/${ev.id}`} className="group">
               <Card className="overflow-hidden border-border/60 bg-card/70 backdrop-blur transition-smooth hover:-translate-y-1 hover:shadow-elegant h-full flex flex-col">
-                <div className={`h-28 sm:h-32 bg-gradient-to-br ${ev.coverColor} relative`}>
+                <div className={`h-28 sm:h-32 bg-gradient-to-br ${ev.coverColor ?? "from-primary to-accent"} relative`}>
                   <div className="absolute inset-0 bg-background/20" />
                 </div>
                 <div className="p-4 sm:p-5 flex-1 flex flex-col">
@@ -103,9 +117,7 @@ export default function Index() {
                   <h3 className="font-display font-semibold text-base sm:text-lg group-hover:text-primary-glow transition-smooth">
                     {ev.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2 flex-1">
-                    {ev.description}
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2 flex-1">{ev.description}</p>
                   <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
                       <Calendar className="h-3.5 w-3.5" />

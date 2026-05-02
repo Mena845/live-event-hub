@@ -8,9 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LiveBadge } from "@/components/LiveBadge";
 import { useFavorites } from "@/hooks/useFavorites";
-import { getRoom, getSpeaker, isLive } from "@/lib/mockData";
 import { useNow } from "@/hooks/useNow";
-import type { Session } from "@/lib/types";
+import type { ApiSession } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
@@ -18,17 +17,18 @@ function fmt(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function SessionCard({ session, compact = false }: { session: Session; compact?: boolean }) {
+function isLive(s: ApiSession, ref: Date) {
+  return new Date(s.startTime) <= ref && new Date(s.endTime) >= ref;
+}
+
+export function SessionCard({ session, compact = false }: { session: ApiSession; compact?: boolean }) {
   const now = useNow(15_000);
   const [mounted, setMounted] = useState(false);
   const live = isLive(session, now);
-  const room = getRoom(session.roomId);
   const { isFavorite, toggle } = useFavorites();
   const fav = isFavorite(session.id);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
   return (
     <Card
@@ -62,28 +62,28 @@ export function SessionCard({ session, compact = false }: { session: Session; co
                 {mounted ? `${fmt(session.startTime)} – ${fmt(session.endTime)}` : "--:-- – --:--"}
               </span>
             </span>
-            <span className="inline-flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" />
-              {room?.name}
-            </span>
+            {session.room && (
+              <span className="inline-flex items-center gap-1">
+                <MapPin className="h-3.5 w-3.5" />
+                {session.room.name}
+              </span>
+            )}
           </div>
-          {!compact && session.speakerIds.length > 0 && (
+          {!compact && session.speakers.length > 0 && (
             <div className="mt-3 flex -space-x-2">
-              {session.speakerIds.map((sid) => {
-                const sp = getSpeaker(sid);
-                if (!sp) return null;
-                return (
+              {session.speakers.map(({ speaker }) =>
+                speaker.photoUrl ? (
                   <Image
-                    key={sid}
-                    src={sp.photoUrl}
-                    alt={sp.fullName}
-                    title={sp.fullName}
+                    key={speaker.id}
+                    src={speaker.photoUrl}
+                    alt={speaker.fullName}
+                    title={speaker.fullName}
                     width={28}
                     height={28}
                     className="h-7 w-7 rounded-full ring-2 ring-card object-cover"
                   />
-                );
-              })}
+                ) : null
+              )}
             </div>
           )}
         </div>
@@ -91,10 +91,7 @@ export function SessionCard({ session, compact = false }: { session: Session; co
           variant="ghost"
           size="icon"
           aria-label={fav ? "Retirer des favoris" : "Ajouter aux favoris"}
-          onClick={(e) => {
-            e.preventDefault();
-            toggle(session.id);
-          }}
+          onClick={(e) => { e.preventDefault(); toggle(session.id); }}
           className={cn("shrink-0", fav && "text-primary-glow")}
         >
           <Star className={cn("h-4 w-4", fav && "fill-current")} />

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowUp, Clock, MapPin, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { LiveBadge } from "@/components/LiveBadge";
-import { getRoom, getSession, getSpeaker, isLive } from "@/lib/mockData";
+import { api, type ApiSessionDetail } from "@/lib/apiClient";
 import { useNow } from "@/hooks/useNow";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useQuestions } from "@/hooks/useQuestions";
@@ -28,33 +28,41 @@ function fmt(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
+function isLive(startTime: string, endTime: string, ref: Date) {
+  return new Date(startTime) <= ref && new Date(endTime) >= ref;
+}
+
 export default function SessionDetailPage() {
   const params = useParams();
-  const rawSessionId = params?.sessionId;
-  const sessionId = typeof rawSessionId === "string" ? rawSessionId : Array.isArray(rawSessionId) ? rawSessionId[0] : "";
-  const session = getSession(sessionId);
+  const rawId = params?.sessionId;
+  const sessionId = typeof rawId === "string" ? rawId : Array.isArray(rawId) ? rawId[0] : "";
+  const [session, setSession] = useState<ApiSessionDetail | null>(null);
   const now = useNow(15_000);
   const { isFavorite, toggle } = useFavorites();
   const { questions, add, upvote } = useQuestions(sessionId);
   const [content, setContent] = useState("");
   const [authorName, setAuthorName] = useState("");
 
-  if (!session) return <div className="p-10">Session introuvable.</div>;
+  useEffect(() => {
+    if (sessionId) api.sessions.get(sessionId).then(setSession).catch(console.error);
+  }, [sessionId]);
 
-  const live = isLive(session, now);
-  const room = getRoom(session.roomId);
+  if (!session) return <div className="p-10 text-muted-foreground">Chargement…</div>;
+
+  const live = isLive(session.startTime, session.endTime, now);
   const fav = isFavorite(session.id);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = qSchema.safeParse({ content, authorName });
-    if (!parsed.success) {
-      toast.error(parsed.error.issues[0].message);
-      return;
+    if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
+    try {
+      await add(sessionId, parsed.data.content, parsed.data.authorName);
+      setContent("");
+      toast.success("Question envoyée");
+    } catch {
+      toast.error("Erreur lors de l'envoi");
     }
-    add(sessionId, parsed.data.content, parsed.data.authorName);
-    setContent("");
-    toast.success("Question envoyée");
   };
 
   return (
@@ -67,17 +75,21 @@ export default function SessionDetailPage() {
         <div className="flex flex-wrap items-center gap-2 mb-3">
           {live && <LiveBadge size="md" />}
           {session.track && (
-            <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">
-              {session.track}
-            </Badge>
+            <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">{session.track}</Badge>
           )}
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{session.title}</h1>
         <p className="mt-3 text-muted-foreground">{session.description}</p>
 
         <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-2"><Clock className="h-4 w-4" />{fmt(session.startTime)} – {fmt(session.endTime)}</span>
-          <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4" />{room?.name}</span>
+          <span className="inline-flex items-center gap-2">
+            <Clock className="h-4 w-4" />{fmt(session.startTime)} – {fmt(session.endTime)}
+          </span>
+          {session.room && (
+            <span className="inline-flex items-center gap-2">
+              <MapPin className="h-4 w-4" />{session.room.name}
+            </span>
+          )}
         </div>
 
         <div className="mt-6">
@@ -92,32 +104,32 @@ export default function SessionDetailPage() {
         </div>
       </Card>
 
-      <section className="mt-8">
-        <h2 className="font-display text-xl font-semibold mb-4">Intervenants</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {session.speakerIds.map((sid) => {
-            const sp = getSpeaker(sid);
-            if (!sp) return null;
-            return (
-              <Link href={`/speakers/${sp.id}`} key={sid}>
+      {session.speakers.length > 0 && (
+        <section className="mt-8">
+          <h2 className="font-display text-xl font-semibold mb-4">Intervenants</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {session.speakers.map(({ speaker }) => (
+              <Link href={`/speakers/${speaker.id}`} key={speaker.id}>
                 <Card className="p-4 flex items-center gap-4 bg-card/60 border-border/60 hover:border-primary/50 transition-smooth">
-                  <Image
-                    src={sp.photoUrl}
-                    alt={sp.fullName}
-                    width={56}
-                    height={56}
-                    className="h-14 w-14 rounded-full object-cover ring-2 ring-border"
-                  />
+                  {speaker.photoUrl && (
+                    <Image
+                      src={speaker.photoUrl}
+                      alt={speaker.fullName}
+                      width={56}
+                      height={56}
+                      className="h-14 w-14 rounded-full object-cover ring-2 ring-border flex-shrink-0"
+                    />
+                  )}
                   <div className="min-w-0">
-                    <p className="font-display font-semibold">{sp.fullName}</p>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{sp.bio}</p>
+                    <p className="font-display font-semibold">{speaker.fullName}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{speaker.bio}</p>
                   </div>
                 </Card>
               </Link>
-            );
-          })}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="mt-10">
         <div className="flex items-center justify-between mb-4">

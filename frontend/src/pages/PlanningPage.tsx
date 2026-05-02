@@ -1,39 +1,48 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { rooms, sessions, events, isLive } from "@/lib/mockData";
+import { useEffect, useState } from "react";
+import { api, type ApiEventDetail, type ApiRoom, type ApiSession } from "@/lib/apiClient";
 import { SessionCard } from "@/components/SessionCard";
 import { useNow } from "@/hooks/useNow";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
+
+function isLive(s: ApiSession, ref: Date) {
+  return new Date(s.startTime) <= ref && new Date(s.endTime) >= ref;
+}
 
 export default function PlanningPage() {
   const params = useParams();
-  const rawEventId = params?.eventId;
-  const eventId = typeof rawEventId === "string" ? rawEventId : Array.isArray(rawEventId) ? rawEventId[0] : "ev1";
-  const ev = events.find((e) => e.id === eventId);
+  const rawId = params?.eventId;
+  const eventId = typeof rawId === "string" ? rawId : Array.isArray(rawId) ? rawId[0] : "ev1";
+  const [ev, setEv] = useState<ApiEventDetail | null>(null);
+  const [rooms, setRooms] = useState<ApiRoom[]>([]);
   const now = useNow();
-  // Vue mobile : une salle à la fois
-  const [activeRoom, setActiveRoom] = useState(rooms[0]?.id ?? "");
+  const [activeRoom, setActiveRoom] = useState<string>("");
 
-  if (!ev) return <div className="p-10">Événement introuvable.</div>;
+  useEffect(() => {
+    api.events.get(eventId).then(setEv).catch(console.error);
+    api.rooms.list().then((r) => {
+      setRooms(r);
+      setActiveRoom(r[0]?.id ?? "");
+    }).catch(console.error);
+  }, [eventId]);
 
-  const evSessions = sessions.filter((s) => s.eventId === ev.id);
+  if (!ev) return <div className="p-10 text-muted-foreground">Chargement…</div>;
+
+  const evSessions = ev.sessions;
 
   return (
-    // ✅ Suppression du ml-45 hardcodé — mx-auto ou flush-left selon contexte
     <div className="py-8 max-w-[1400px] mx-auto w-full">
       <div className="px-4 sm:px-8 mb-6">
         <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">Planning multi-track</h1>
         <p className="text-muted-foreground mt-1">{ev.title}</p>
       </div>
 
-      {/* Sélecteur de salle — visible sur mobile uniquement */}
+      {/* Sélecteur de salle — mobile */}
       <div className="md:hidden px-4 mb-4 flex gap-2 overflow-x-auto pb-1">
         {rooms.map((room) => {
-          const liveCount = evSessions.filter(
-            (s) => s.roomId === room.id && isLive(s, now)
-          ).length;
+          const liveCount = evSessions.filter((s) => s.roomId === room.id && isLive(s, now)).length;
           return (
             <button
               key={room.id}
@@ -46,16 +55,15 @@ export default function PlanningPage() {
               )}
             >
               {room.name}
-              {liveCount > 0 && (
-                <span className="ml-1.5 text-[10px] text-live-glow font-bold">● LIVE</span>
-              )}
+              {liveCount > 0 && <span className="ml-1.5 text-[10px] text-live-glow font-bold">● LIVE</span>}
             </button>
           );
         })}
       </div>
 
-      {/* Grille desktop : toutes les salles côte à côte */}
-      <div className="hidden md:grid gap-5 px-4 sm:px-8"
+      {/* Desktop : toutes les salles */}
+      <div
+        className="hidden md:grid gap-5 px-4 sm:px-8"
         style={{ gridTemplateColumns: `repeat(${rooms.length}, minmax(0, 1fr))` }}
       >
         {rooms.map((room) => {
@@ -76,19 +84,15 @@ export default function PlanningPage() {
                 </div>
               </div>
               <div className="flex flex-col gap-3">
-                {list.map((s) => (
-                  <SessionCard key={s.id} session={s} compact />
-                ))}
-                {list.length === 0 && (
-                  <p className="text-sm text-muted-foreground">Aucune session.</p>
-                )}
+                {list.map((s) => <SessionCard key={s.id} session={s} compact />)}
+                {list.length === 0 && <p className="text-sm text-muted-foreground">Aucune session.</p>}
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Vue mobile : une seule salle */}
+      {/* Mobile : une seule salle */}
       <div className="md:hidden px-4">
         {rooms.map((room) => {
           if (room.id !== activeRoom) return null;
@@ -97,12 +101,8 @@ export default function PlanningPage() {
             .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
           return (
             <div key={room.id} className="flex flex-col gap-3">
-              {list.map((s) => (
-                <SessionCard key={s.id} session={s} />
-              ))}
-              {list.length === 0 && (
-                <p className="text-sm text-muted-foreground">Aucune session.</p>
-              )}
+              {list.map((s) => <SessionCard key={s.id} session={s} />)}
+              {list.length === 0 && <p className="text-sm text-muted-foreground">Aucune session.</p>}
             </div>
           );
         })}

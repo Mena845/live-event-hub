@@ -2,13 +2,17 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Calendar, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SessionCard } from "@/components/SessionCard";
-import { events, sessions, isLive } from "@/lib/mockData";
+import { api, type ApiEventDetail, type ApiSession } from "@/lib/apiClient";
 import { useNow } from "@/hooks/useNow";
-import { useState } from "react";
+
+function isLive(s: ApiSession, ref: Date) {
+  return new Date(s.startTime) <= ref && new Date(s.endTime) >= ref;
+}
 
 function fmtDateRange(start: string, end: string) {
   const s = new Date(start);
@@ -18,38 +22,36 @@ function fmtDateRange(start: string, end: string) {
 
 export default function EventPage() {
   const params = useParams();
-  const rawEventId = params?.eventId;
-  const eventId = typeof rawEventId === "string" ? rawEventId : Array.isArray(rawEventId) ? rawEventId[0] : "ev1";
-  const ev = events.find((e) => e.id === eventId);
+  const rawId = params?.eventId;
+  const eventId = typeof rawId === "string" ? rawId : Array.isArray(rawId) ? rawId[0] : "ev1";
+  const [ev, setEv] = useState<ApiEventDetail | null>(null);
   const now = useNow();
   const [filter, setFilter] = useState<"all" | "live" | "upcoming">("all");
 
-  if (!ev) {
-    return <div className="p-10">Événement introuvable.</div>;
-  }
+  useEffect(() => {
+    api.events.get(eventId).then(setEv).catch(console.error);
+  }, [eventId]);
 
-  const evSessions = sessions.filter((s) => s.eventId === ev.id);
-  const tracks = Array.from(new Set(evSessions.map((s) => s.track).filter(Boolean))) as string[];
+  if (!ev) return <div className="p-10 text-muted-foreground">Chargement…</div>;
 
-  const filtered = evSessions.filter((s) => {
+  const tracks = Array.from(new Set(ev.sessions.map((s) => s.track).filter(Boolean))) as string[];
+
+  const filtered = ev.sessions.filter((s) => {
     if (filter === "live") return isLive(s, now);
-    if (filter === "upcoming") return new Date(s.startTime).getTime() > now.getTime();
+    if (filter === "upcoming") return new Date(s.startTime) > now;
     return true;
   });
 
   return (
-    // ✅ Suppression du ml-50 hardcodé
     <div className="px-4 sm:px-8 py-8 max-w-7xl mx-auto w-full">
       <div className="rounded-2xl sm:rounded-3xl overflow-hidden border border-border/60 shadow-elegant">
-        <div className={`h-36 sm:h-44 bg-gradient-to-br ${ev.coverColor} relative`}>
+        <div className={`h-36 sm:h-44 bg-gradient-to-br ${ev.coverColor ?? "from-primary to-accent"} relative`}>
           <div className="absolute inset-0 bg-background/30" />
         </div>
         <div className="bg-card/70 backdrop-blur p-5 sm:p-8">
           <div className="flex flex-wrap gap-2 mb-3">
             {tracks.map((t) => (
-              <Badge key={t} variant="secondary" className="text-[10px] uppercase tracking-wider">
-                {t}
-              </Badge>
+              <Badge key={t} variant="secondary" className="text-[10px] uppercase tracking-wider">{t}</Badge>
             ))}
           </div>
           <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight">{ev.title}</h1>
@@ -72,7 +74,6 @@ export default function EventPage() {
         </div>
       </div>
 
-      {/* Filtre + sessions */}
       <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h2 className="font-display text-xl sm:text-2xl font-semibold">Sessions</h2>
         <div className="inline-flex self-start sm:self-auto rounded-full border border-border/60 bg-card/50 p-1">
@@ -93,9 +94,7 @@ export default function EventPage() {
       </div>
 
       <div className="mt-4 sm:mt-5 grid gap-4 md:grid-cols-2">
-        {filtered.map((s) => (
-          <SessionCard key={s.id} session={s} />
-        ))}
+        {filtered.map((s) => <SessionCard key={s.id} session={s} />)}
         {filtered.length === 0 && (
           <p className="text-muted-foreground col-span-full">Aucune session pour ce filtre.</p>
         )}

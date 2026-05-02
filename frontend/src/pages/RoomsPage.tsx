@@ -1,13 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { rooms, sessions, isLive } from "@/lib/mockData";
+import { useEffect, useState } from "react";
+import { api, type ApiRoom, type ApiSession } from "@/lib/apiClient";
 import { Card } from "@/components/ui/card";
 import { LiveBadge } from "@/components/LiveBadge";
 import { useNow } from "@/hooks/useNow";
 
+function isLive(s: ApiSession, ref: Date) {
+  return new Date(s.startTime) <= ref && new Date(s.endTime) >= ref;
+}
+
 export default function RoomsPage() {
   const now = useNow();
+  const [rooms, setRooms] = useState<ApiRoom[]>([]);
+  const [sessions, setSessions] = useState<ApiSession[]>([]);
+
+  useEffect(() => {
+    api.rooms.list().then(setRooms).catch(console.error);
+    api.sessions.list().then(setSessions).catch(console.error);
+  }, []);
 
   return (
     <div className="px-4 sm:px-8 py-8 max-w-6xl mx-auto w-full">
@@ -43,6 +55,7 @@ export default function RoomsPage() {
                     </Link>
                   );
                 })}
+                {list.length === 0 && <p className="text-sm text-muted-foreground">Aucune session.</p>}
               </div>
             </section>
           );

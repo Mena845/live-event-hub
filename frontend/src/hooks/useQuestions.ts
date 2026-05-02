@@ -1,59 +1,52 @@
+/**
+ * useQuestions — questions stockées en base via le backend.
+ */
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
-import { questions as seed } from "@/lib/mockData";
-import type { Question } from "@/lib/types";
-
-const KEY = "eventflow:questions";
-
-function read(): Question[] {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw) as Question[];
-  } catch {
-    // Fall back to seed data when storage is unavailable or corrupted.
-  }
-  return seed;
-}
-
-let listeners: Array<() => void> = [];
-const notify = () => listeners.forEach((l) => l());
+import { api, type ApiQuestion } from "@/lib/apiClient";
 
 export function useQuestions(sessionId?: string) {
-  const [all, setAll] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<ApiQuestion[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const refresh = useCallback(async () => {
+    if (!sessionId) return;
+    setLoading(true);
+    try {
+      const data = await api.questions.listBySession(sessionId);
+      setQuestions(data);
+    } catch {
+      // réseau indisponible
+    } finally {
+      setLoading(false);
+    }
+  }, [sessionId]);
 
   useEffect(() => {
-    setAll(read());
-    const sync = () => setAll(read());
-    listeners.push(sync);
-    return () => {
-      listeners = listeners.filter((l) => l !== sync);
-    };
+    refresh();
+    // Polling léger toutes les 10 s pour le mode live
+    const interval = setInterval(refresh, 10_000);
+    return () => clearInterval(interval);
+  }, [refresh]);
+
+  const add = useCallback(
+    async (sId: string, content: string, authorName?: string) => {
+      const q = await api.questions.create(sId, {
+        content: content.trim().slice(0, 500),
+        authorName: authorName?.trim() || undefined,
+      });
+      setQuestions((prev) => [...prev, q]);
+    },
+    []
+  );
+
+  const upvote = useCallback(async (qId: string) => {
+    const updated = await api.questions.upvote(qId);
+    setQuestions((prev) => prev.map((q) => (q.id === qId ? updated : q)));
   }, []);
 
-  const persist = (next: Question[]) => {
-    localStorage.setItem(KEY, JSON.stringify(next));
-    notify();
-  };
+  const sorted = [...questions].sort((a, b) => b.upvotes - a.upvotes);
 
-  const add = useCallback((sId: string, content: string, authorName?: string) => {
-    const next: Question = {
-      id: `q_${Date.now()}`,
-      sessionId: sId,
-      content: content.trim().slice(0, 500),
-      authorName: authorName?.trim() || undefined,
-      upvotes: 0,
-      createdAt: new Date().toISOString(),
-    };
-    persist([...read(), next]);
-  }, []);
-
-  const upvote = useCallback((qId: string) => {
-    const next = read().map((q) => (q.id === qId ? { ...q, upvotes: q.upvotes + 1 } : q));
-    persist(next);
-  }, []);
-
-  const list = sessionId
-    ? all.filter((q) => q.sessionId === sessionId).sort((a, b) => b.upvotes - a.upvotes)
-    : all;
-
-  return { questions: list, add, upvote };
+  return { questions: sorted, add, upvote, loading };
 }
