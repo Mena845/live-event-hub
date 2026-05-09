@@ -38,11 +38,12 @@ export function AppSidebar() {
       <SidebarContent>
         <div className="px-7 pt-4 pb-2">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-primary shadow-glow flex items-center justify-center">
-              <Radio className="h-4 w-4 text-primary-foreground" />
+            <div className="relative h-8 w-8 rounded-lg bg-gradient-primary shadow-glow flex items-center justify-center btn-glow">
+              <Radio className="h-4 w-4 text-primary-foreground animate-pulse" />
+              <span aria-hidden className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-live animate-ping" />
             </div>
             {!collapsed && (
-              <span className="font-display font-bold text-lg tracking-tight">EventFlow</span>
+              <span className="font-display font-bold text-lg tracking-tight text-shimmer">EventFlow</span>
             )}
           </Link>
         </div>

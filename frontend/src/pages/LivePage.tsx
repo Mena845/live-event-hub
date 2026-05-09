@@ -18,18 +18,20 @@ export default function LivePage() {
 
   return (
     <div className="px-4 sm:px-8 py-8 max-w-6xl mx-auto w-full">
-      <div className="flex items-center gap-3 mb-2">
+      <div className="flex items-center gap-3 mb-2 animate-fade-in-up">
         <LiveBadge size="md" />
-        <h1 className="font-display text-3xl font-bold tracking-tight">Sessions en direct</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight text-shimmer">Sessions en direct</h1>
       </div>
-      <p className="text-muted-foreground mb-8">Posez vos questions et upvotez en temps réel.</p>
+      <p className="text-muted-foreground mb-8 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+        Posez vos questions et upvotez en temps réel.
+      </p>
 
       {live.length === 0 ? (
-        <div className="rounded-2xl border border-border/60 bg-card/50 p-10 text-center text-muted-foreground">
-          Aucune session en direct pour l&apos;instant.
+        <div className="relative rounded-2xl border border-border/60 bg-card/50 p-10 text-center text-muted-foreground bg-aurora overflow-hidden animate-scale-in">
+          <div className="relative z-10">Aucune session en direct pour l&apos;instant.</div>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 stagger">
           {live.map((s) => <SessionCard key={s.id} session={s} />)}
         </div>
       )}
