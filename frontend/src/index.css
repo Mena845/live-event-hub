@@ -116,3 +116,102 @@ All colors MUST be HSL.
 
 .live-pulse { animation: pulse-live 1.8s ease-out infinite; }
 .live-dot { animation: blink-dot 1.2s ease-in-out infinite; }
+
+/* ── Animated background blobs ───────────────────────────── */
+.bg-aurora {
+  position: relative;
+  isolation: isolate;
+}
+.bg-aurora::before,
+.bg-aurora::after {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  z-index: -1;
+  background:
+    radial-gradient(40% 40% at 30% 30%, hsl(var(--primary-glow) / 0.45), transparent 60%),
+    radial-gradient(35% 35% at 70% 60%, hsl(var(--accent) / 0.4), transparent 60%),
+    radial-gradient(30% 30% at 50% 80%, hsl(var(--live) / 0.35), transparent 65%);
+  filter: blur(60px);
+  animation: aurora 18s ease-in-out infinite;
+  pointer-events: none;
+}
+.bg-aurora::after {
+  animation-duration: 26s;
+  animation-direction: reverse;
+  opacity: 0.7;
+}
+
+/* ── Animated gradient text shimmer ──────────────────────── */
+.text-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary)) 0%,
+    hsl(var(--primary-glow)) 25%,
+    hsl(var(--accent)) 50%,
+    hsl(var(--primary-glow)) 75%,
+    hsl(var(--primary)) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 6s ease infinite;
+}
+
+/* ── Card sheen on hover ─────────────────────────────────── */
+.card-sheen { position: relative; overflow: hidden; }
+.card-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    hsl(var(--primary-glow) / 0.18) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.9s var(--transition-smooth);
+  pointer-events: none;
+}
+.card-sheen:hover::after { transform: translateX(100%); }
+
+/* ── Stagger entrance ────────────────────────────────────── */
+.stagger > * { animation: fade-in-up 0.7s cubic-bezier(0.22,1,0.36,1) both; }
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.12s; }
+.stagger > *:nth-child(3) { animation-delay: 0.19s; }
+.stagger > *:nth-child(4) { animation-delay: 0.26s; }
+.stagger > *:nth-child(5) { animation-delay: 0.33s; }
+.stagger > *:nth-child(6) { animation-delay: 0.4s; }
+.stagger > *:nth-child(7) { animation-delay: 0.47s; }
+.stagger > *:nth-child(8) { animation-delay: 0.54s; }
+.stagger > *:nth-child(9) { animation-delay: 0.61s; }
+.stagger > *:nth-child(n+10) { animation-delay: 0.68s; }
+
+/* ── Micro hover lift ─────────────────────────────────────── */
+.hover-lift {
+  transition: transform 0.4s var(--transition-smooth),
+              box-shadow 0.4s var(--transition-smooth);
+}
+.hover-lift:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 25px 60px -15px hsl(var(--primary) / 0.45);
+}
+
+/* ── Magnetic button glow ─────────────────────────────────── */
+@keyframes border-glow {
+  0%, 100% { box-shadow: 0 0 20px hsl(var(--primary-glow) / 0.35); }
+  50% { box-shadow: 0 0 45px hsl(var(--primary-glow) / 0.7); }
+}
+.btn-glow { animation: border-glow 3s ease-in-out infinite; }
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

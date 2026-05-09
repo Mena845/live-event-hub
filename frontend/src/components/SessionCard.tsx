@@ -33,10 +33,16 @@ export function SessionCard({ session, compact = false }: { session: ApiSession;
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden border-border/60 bg-card/70 backdrop-blur-sm p-4 transition-smooth hover:-translate-y-0.5 hover:shadow-elegant",
-        live && "border-live/50 shadow-glow"
+        "group relative overflow-hidden border-border/60 bg-card/70 backdrop-blur-sm p-4 hover-lift card-sheen",
+        live && "border-live/50 shadow-glow animate-pop-in"
       )}
     >
+      {live && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -inset-px rounded-[inherit] bg-gradient-live opacity-20 blur-xl animate-glow-pulse"
+        />
+      )}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2 mb-2">
